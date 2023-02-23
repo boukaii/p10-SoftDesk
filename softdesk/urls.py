@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_nested import routers
-from shop.views import ContributorViewSet, CommentViewSet, IssueViewSet, SignupView
+from shop.views import ContributorViewSet, CommentViewSet, IssueViewSet, UserSignUpView
 from django.contrib.auth.views import LogoutView
 from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView)
 
@@ -20,9 +20,11 @@ router2.register('comments', CommentViewSet, basename='comments')
 urlpatterns = [
     path("admin/", admin.site.urls),
     path('api/', include('rest_framework.urls')),
+    # Page de déconnexion
     path('logout/', LogoutView.as_view(), name='logout'),
-    path('signup/', SignupView.as_view(), name='signup'),
-    # Obtention de tokens
+    # Page d'inscription
+    path('signup/', UserSignUpView.as_view(), name='signup'),
+    # page de connexion, Obtention de tokens
     path("login/", TokenObtainPairView.as_view(), name="login"),
     # Rafraichissemet du token d'acces
     path('login/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
