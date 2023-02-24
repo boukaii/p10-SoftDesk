@@ -1,13 +1,13 @@
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework_nested import routers
-from shop.views import ContributorViewSet, CommentViewSet, IssueViewSet, UserSignUpView
+from shop.views import ContributorViewSet, CommentViewSet, IssueViewSet, UserSignUpView, ProjectViewSet
 from django.contrib.auth.views import LogoutView
 from rest_framework_simplejwt.views import (TokenObtainPairView, TokenRefreshView)
 
 
 router = routers.SimpleRouter()
-# router.register('projects', ProjectViewSet, basename='projects')
+router.register('projects', ProjectViewSet, basename='projects')
 
 router1 = routers.SimpleRouter()
 router1.register('contributors', ContributorViewSet, basename='contributors')
