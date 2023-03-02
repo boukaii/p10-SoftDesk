@@ -1,5 +1,11 @@
 from django.conf import settings
 from django.db import models
+from django.contrib.auth.models import AbstractUser
+
+
+class User(AbstractUser):
+
+    email = models.EmailField(unique=True)
 
 
 class Project(models.Model):
@@ -63,3 +69,5 @@ class Comment(models.Model):
                               on_delete=models.CASCADE,
                               related_name='comments')
     created_time = models.DateTimeField(auto_now_add=True)
+
+
