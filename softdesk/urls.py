@@ -32,4 +32,3 @@ urlpatterns = [
     path('api/', include(router1.urls)),
     path('api/', include(router2.urls)),
 ]
-

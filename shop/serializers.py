@@ -1,28 +1,46 @@
 from rest_framework.serializers import ModelSerializer
 from shop.models import Contributor, Issue, Project, Comment
 from rest_framework import serializers
-from shop.models import User
+from rest_framework.validators import UniqueValidator
+from django.contrib.auth.password_validation import validate_password
+
+from django.contrib.auth.models import User
 
 
-class UserSerializer(serializers.ModelSerializer):
+class SignupSerializer(serializers.ModelSerializer):
+    email = serializers.EmailField(
+        required=True,
+        validators=[UniqueValidator(queryset=User.objects.all())]
+    )
+
+    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+    password2 = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'first_name',
-                  'last_name', 'email', 'password']
+        fields = ('username', 'email', 'password', 'password2', 'first_name', 'last_name')
+        extra_kwargs = {
+            'first_name': {'required': True},
+            'last_name': {'required': True},
+        }
+
+    def validate(self, attrs):
+        if attrs['password'] != attrs['password2']:
+            raise serializers.ValidationError({"password": "Password fields did not match."})
+
+        return attrs
 
     def create(self, validated_data):
-        user = User.objects.create(
+        user = User.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
             first_name=validated_data['first_name'],
-            last_name=validated_data['last_name']
+            last_name=validated_data['last_name'],
         )
-
         user.set_password(validated_data['password'])
         user.save()
 
-        return
+        return user
 
 
 class ProjectSerializer(ModelSerializer):
@@ -64,69 +82,3 @@ class CommentSerializer(ModelSerializer):
     class Meta:
         model = Comment
         fields = ["id", "created_time", "description", "author_user_id", "issue_id"]
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# class UserSerializer(serializers.ModelSerializer):
-#     class Meta:
-#         model = User
-#         fields = ['id',
-#                   'username',
-#                   'first_name',
-#                   'last_name',
-#                   'email',
-#                   'password']
-#
-#     # create_user to have the hash
-#     def create(self, validated_data):
-#         user = User.objects.create_user(**validated_data)
-#         return user
-#
-#     # password not check with create_user, need the following code
-#     @staticmethod
-#     def validate_password(data):
-#         validators.validate_password(password=data, user=User)
-#         return
-#

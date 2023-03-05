@@ -1,15 +1,16 @@
-from shop.serializers import ProjectSerializer, ContributorSerializer, IssueSerializer, CommentSerializer, UserSerializer
-from shop.models import Project, Contributor, Issue, Comment, User
+from shop.serializers import ProjectSerializer, ContributorSerializer, IssueSerializer, CommentSerializer, SignupSerializer
+from shop.models import Project, Contributor, Issue, Comment
 from rest_framework import viewsets
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
+from django.contrib.auth.models import User
 
 
 class UserSignUpView(generics.CreateAPIView):
 
     queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = [AllowAny]
+    serializer_class = SignupSerializer
+    permission_classes = (AllowAny,)
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
@@ -80,4 +81,3 @@ class CommentViewSet(viewsets.ModelViewSet):
         """
         issue = self.kwargs['issue_id']
         return Comment.objects.filter(issue=issue)
-
