@@ -1,9 +1,14 @@
-from shop.serializers import ProjectSerializer, ContributorSerializer, IssueSerializer, CommentSerializer, SignupSerializer
+from shop.serializers import ProjectSerializer, ContributorSerializer, IssueSerializer,\
+    CommentSerializer, SignupSerializer
 from shop.models import Project, Contributor, Issue, Comment
+from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
 from django.contrib.auth.models import User
+from .permissions import (IsAuthorProject,
+                          IsContributorProject,
+                          CanManageContributors)
 
 
 class UserSignUpView(generics.CreateAPIView):
@@ -15,6 +20,7 @@ class UserSignUpView(generics.CreateAPIView):
 
 class ProjectViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
+    permission_classes = [IsAuthenticated, IsAuthorProject]
 
     def perform_create(self, serializer):
         serializer.save(author_user=self.request.user)
@@ -31,6 +37,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
 class ContributorViewSet(viewsets.ModelViewSet):
 
     serializer_class = ContributorSerializer
+    permission_classes = [IsAuthenticated, CanManageContributors]
 
     def get_queryset(self):
         """Retourne la liste de tout les
@@ -52,6 +59,7 @@ class ContributorViewSet(viewsets.ModelViewSet):
 class IssueViewSet(viewsets.ModelViewSet):
 
     serializer_class = IssueSerializer
+    permission_classes = [IsAuthenticated, IsContributorProject]
 
     def perform_create(self, serializer):
         project = self.kwargs['project_id']
@@ -69,6 +77,7 @@ class IssueViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
 
     serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated, IsContributorProject]
 
     def perform_create(self, serializer):
         issue = self.kwargs['issue_id']
