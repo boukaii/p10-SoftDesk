@@ -3,34 +3,34 @@ from django.db import models
 
 
 class Project(models.Model):
-    BACKEND = 'BACKEND'
-    FRONTEND = 'FRONTEND'
-    IOS = 'IOS'
-    ANDROID = 'ANDROID'
-    TYPES_CHOICES = (
-        (BACKEND, 'Back-end'),
-        (FRONTEND, 'Front-end'),
-        (IOS, 'iOS'),
-        (ANDROID, 'Android')
-    )
-    title = models.CharField(max_length=50)
-    description = models.TextField()
-    type = models.CharField(max_length=30)
-    author = models.ForeignKey(to=settings.AUTH_USER_MODEL,
-                               on_delete=models.CASCADE,
-                               related_name='projects')
+    PROJECT_TYPES = [
+                    ('BE', 'Back-end'),
+                    ('FE', 'Front-end'),
+                    ('IOS', 'IOS'),
+                    ('ANDROID', 'Android'),
+                    ]
+
+    title = models.CharField(max_length=128)
+    description = models.CharField(max_length=255)
+    type = models.CharField(max_length=7, choices=PROJECT_TYPES)
+    contributor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.RESTRICT,
+                                    related_name='project_created_by')
 
     def __str__(self):
         return self.title
 
 
 class Contributor(models.Model):
-    user = models.ForeignKey(to=settings.AUTH_USER_MODEL,
-                             on_delete=models.CASCADE,
-                             related_name='contributors')
-    project = models.ForeignKey('Project',
-                                on_delete=models.CASCADE,
-                                related_name='contributors')
+    AUTHOR = 'AUTHOR'
+    CONTRIBUTOR = 'CONTRIBUTOR'
+
+    CHOICES = [
+        (AUTHOR, 'Auteur'),
+        (CONTRIBUTOR, 'Contributeur'),
+    ]
+    user = models.ForeignKey(to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    project = models.ForeignKey(to=Project, on_delete=models.CASCADE, null=True, related_name='contributor_project')
+    role = models.CharField(max_length=30, choices=CHOICES, verbose_name='role')
 
 
 class Issue(models.Model):

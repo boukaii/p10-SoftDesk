@@ -1,63 +1,34 @@
-from rest_framework.serializers import ModelSerializer
 from shop.models import Contributor, Issue, Project, Comment
 from rest_framework import serializers
-from rest_framework.validators import UniqueValidator
-from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.models import User
+from rest_framework.serializers import ModelSerializer,  ValidationError
 
 
-class SignupSerializer(serializers.ModelSerializer):
-    email = serializers.EmailField(
-        required=True,
-        validators=[UniqueValidator(queryset=User.objects.all())]
-    )
-
-    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
-    password2 = serializers.CharField(write_only=True, required=True)
+class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'password', 'password2', 'first_name', 'last_name')
-        extra_kwargs = {
-            'first_name': {'required': True},
-            'last_name': {'required': True},
-        }
-
-    def validate(self, attrs):
-        if attrs['password'] != attrs['password2']:
-            raise serializers.ValidationError({"password": "Password fields did not match."})
-
-        return attrs
+        fields = ['id', 'username', 'first_name',
+                  'last_name', 'email', 'password']
 
     def create(self, validated_data):
-        user = User.objects.create_user(
+        user = User.objects.create(
             username=validated_data['username'],
             email=validated_data['email'],
             first_name=validated_data['first_name'],
-            last_name=validated_data['last_name'],
+            last_name=validated_data['last_name']
         )
+
         user.set_password(validated_data['password'])
         user.save()
 
         return user
 
 
-class ProjectSerializer(ModelSerializer):
-    class Meta:
-        model = Project
-        fields = [
-            "id",
-            "title",
-            "description",
-            "type",
-            "author_user_id",
-        ]
-
-
 class ContributorSerializer(ModelSerializer):
     class Meta:
         model = Contributor
-        fields = ["id", "user_id", "project_id"]
+        fields = ['role', 'project', 'user']
 
 
 class IssueSerializer(ModelSerializer):
@@ -81,3 +52,28 @@ class CommentSerializer(ModelSerializer):
     class Meta:
         model = Comment
         fields = ["id", "created_time", "description", "author_user_id", "issue_id"]
+
+
+class ProjectSerializer(ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ['title', 'description', 'type', 'contributor']
+
+    def validate_title(self, value):
+        if Project.objects.filter(title=value).exists():
+            raise ValidationError({'title error': 'Ce titre de project existe déjà'})
+        return value
+
+
+class ProjectDetailSerializer(ModelSerializer):
+    contributor_project = ContributorSerializer(many=True)
+
+    class Meta:
+        model = Project
+        fields = ['title', 'description', 'type', 'contributor_project']
+
+    def validate_title(self, value):
+        if Project.objects.filter(title=value).exists():
+            raise ValidationError({'title error': 'Ce titre de project existe déjà'})
+        return value
+
