@@ -4,7 +4,7 @@ from rest_framework_nested import routers
 from projects.views import ContributorViewSet, CommentViewSet, IssueViewSet, UserSignUpView, ProjectViewSet
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.contrib.auth.views import LogoutView
-
+"test"
 
 router = routers.SimpleRouter(trailing_slash=True)
 router.register(r"project/?", ProjectViewSet, basename="project")
