@@ -1,45 +1,36 @@
 from rest_framework import permissions
-from rest_framework.generics import get_object_or_404
-
-from .models import Project, Issue, Comment
 
 
-class ProjectPermissions(permissions.BasePermission):
-    def has_permission(self, request, view):
-        try:
-            project = get_object_or_404(Project, id=view.kwargs['project_pk'])
-            if request.method in permissions.SAFE_METHODS:
-                return project in Project.objects.filter(contributor_id=request.user)
-            return request.user == project.author
-        except KeyError:
+class IsAuthorOrReadOnly(permissions.BasePermission):
+    message = "Seul un auteur ou contributeur du projet peut effectuer des opérations"
+
+    def has_object_permission(self, request, view,  obj):
+
+        if request.method in permissions.SAFE_METHODS:
             return True
 
+        return obj.contributor_project == request.user
 
-class ContributorPermissions(permissions.BasePermission):
-    def has_permission(self, request, view):
-        project = get_object_or_404(Project, id=view.kwargs['project_pk'])
+
+class IsIssueAuthorOrReadOnly(permissions.BasePermission):
+    message = "Seul l'auteur du problème peut le modifier ou le supprimer"
+
+    def has_object_permission(self, request, view,  obj):
+
         if request.method in permissions.SAFE_METHODS:
-            return project in Project.objects.filter(contributor_id=request.user)
-        return request.user == project.contributor_project
+            return True
+
+        return obj.author == request.user
 
 
-class IssuePermissions(permissions.BasePermission):
-    def has_permission(self, request, view):
-        project = get_object_or_404(Project, id=view.kwargs['project_pk'])
-        try:
-            issue = get_object_or_404(Issue, id=view.kwargs['issue_pk'])
-            return request.user == issue.author
-        except KeyError:
-            return project in Project.objects.filter(contributor_id=request.user)
+class IsCommentAuthorOrReadOnly(permissions.BasePermission):
+    message = "Seul l'auteur du commentaire peut actualiser ou supprimer"
+    # Les commentaires doivent être visibles par tous les contributeurs au projet
+    # et par le responsable du projet, mais seul leur auteur
+    # peut les actualiser ou les supprimer.
 
+    def has_object_permission(self, request, view, obj):
 
-class CommentPermissions(permissions.BasePermission):
-    def has_permission(self, request, view):
-        project = get_object_or_404(Project, id=view.kwargs['project_pk'])
-        try:
-            comment = get_object_or_404(Comment, id=view.kwargs['comment_pk'])
-            if request.method in permissions.SAFE_METHODS:
-                return project in Project.objects.filter(contributor_id=request.user)
-            return request.user == comment.author
-        except KeyError:
-            return project in Project.objects.filter(contributor_id=request.user)
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        return obj.author == request.user

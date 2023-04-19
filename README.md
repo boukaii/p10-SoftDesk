@@ -16,7 +16,7 @@ L'API doit respecter les directives suivantes :
 
 # Documentation :
 
-Pour plus de détails sur le fonctionnement de cette API, se référer à sa documentation (Postman).
+Pour plus de détails sur le fonctionnement de cette API, se référer à sa documentation : https://documenter.getpostman.com/view/25708562/2s93Y2S2UY (Postman).
 
 # Installation :
 

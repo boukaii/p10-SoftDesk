@@ -5,12 +5,11 @@ from projects.models import Project, Contributor, Issue, Comment
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import viewsets
 from rest_framework import generics
-from rest_framework.permissions import AllowAny
 from django.contrib.auth.models import User
 from projects.permissions import (
-    ProjectPermissions,
-    IssuePermissions,
-    CommentPermissions,
+    IsAuthorOrReadOnly,
+    IsIssueAuthorOrReadOnly,
+    IsCommentAuthorOrReadOnly,
 )
 
 
@@ -18,13 +17,13 @@ class UserSignUpView(generics.CreateAPIView):
 
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    permission_classes = (AllowAny,)
+    permission_classes = []
 
 
 class ProjectViewSet(viewsets.ModelViewSet):
 
     serializer_class = ProjectSerializer
-    permission_classes = [IsAuthenticated, ProjectPermissions]
+    permission_classes = [IsAuthenticated, IsAuthorOrReadOnly]
 
     def get_queryset(self):
         contributors = Contributor.objects.filter(user=self.request.user)
@@ -36,7 +35,7 @@ class ProjectViewSet(viewsets.ModelViewSet):
 class IssueViewSet(viewsets.ModelViewSet):
 
     serializer_class = IssueSerializer
-    permission_classes = [IsAuthenticated, IssuePermissions]
+    permission_classes = [IsAuthenticated, IsIssueAuthorOrReadOnly]
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
@@ -53,7 +52,10 @@ class IssueViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     # queryset = Comment.objects.all()
     serializer_class = CommentSerializer
-    permission_classes = [IsAuthenticated, CommentPermissions]
+    permission_classes = [IsAuthenticated, IsCommentAuthorOrReadOnly]
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
 
     def get_queryset(self):
         print(self.kwargs)
