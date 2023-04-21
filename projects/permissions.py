@@ -6,10 +6,12 @@ class IsAuthorOrReadOnly(permissions.BasePermission):
 
     def has_object_permission(self, request, view,  obj):
 
+        """On autorise toute les demandes"""
         if request.method in permissions.SAFE_METHODS:
             return True
 
-        return obj.contributor_project == request.user
+        """Les autorisations d'écriture ne sont accordées qu'au propriétaire de l'extrait"""
+        return obj.contributor == request.user
 
 
 class IsIssueAuthorOrReadOnly(permissions.BasePermission):
